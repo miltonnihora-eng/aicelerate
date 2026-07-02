@@ -1,0 +1,134 @@
+name: NPO CMS API Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'tests/npo-cms*'
+      - 'tests/config.ts'
+      - 'playwright.config.ts'
+      - '.github/workflows/npo-cms-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+
+jobs:
+  api-tests:
+    name: NPO CMS API Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run API CRUD tests
+        env:
+          BASE_URL: ${{ secrets.NPO_CMS_BASE_URL || 'https://tst.luister-cms.api.npox.nl' }}
+          LUISTER_CMS_API_TOKEN: ${{ secrets.LUISTER_CMS_API_TOKEN }}
+        run: npm run test:npo-api
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-test-results
+          path: test-results/
+          retention-days: 30
+      
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: NPO CMS API Test Results
+          path: 'test-results/junit.xml'
+          reporter: 'java-junit'
+
+  swagger-ui-tests:
+    name: NPO CMS Swagger UI Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      
+      - name: Run Swagger UI tests
+        env:
+          BASE_URL: ${{ secrets.NPO_CMS_BASE_URL || 'https://tst.luister-cms.api.npox.nl' }}
+        run: npm run test:npo-swagger
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: swagger-ui-test-results
+          path: test-results/
+          retention-days: 30
+      
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: NPO CMS Swagger UI Test Results
+          path: 'test-results/junit.xml'
+          reporter: 'java-junit'
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [api-tests, swagger-ui-tests]
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: Check API test status
+        run: |
+          if [ -f "api-test-results/junit.xml" ]; then
+            echo "✅ API Tests completed"
+          else
+            echo "⚠️ API Tests - no results found"
+          fi
+      
+      - name: Check Swagger UI test status
+        run: |
+          if [ -f "swagger-ui-test-results/junit.xml" ]; then
+            echo "✅ Swagger UI Tests completed"
+          else
+            echo "⚠️ Swagger UI Tests - no results found"
+          fi
+      
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## NPO CMS Test Suite Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results" >> $GITHUB_STEP_SUMMARY
+          echo "- API CRUD Tests: ${{ needs.api-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Swagger UI Tests: ${{ needs.swagger-ui-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- [API Test Results](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [Swagger UI Test Results](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY

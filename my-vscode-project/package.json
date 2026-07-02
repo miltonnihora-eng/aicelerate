@@ -1,0 +1,37 @@
+{
+  "name": "my-vscode-project",
+  "version": "1.0.0",
+  "description": "A sample project integrated with Visual Studio Code.",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:browserstack": "playwright test --config=playwright.config.ts",
+    "test:npo-api": "playwright test npo-cms-api.spec.ts",
+    "test:npo-swagger": "playwright test npo-cms-swagger-ui.spec.ts",
+    "test:npo": "playwright test npo-cms",
+    "test:npo:debug": "playwright test npo-cms --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/my-vscode-project.git"
+  },
+  "keywords": [
+    "vscode",
+    "typescript",
+    "sample"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "@browserstack/local": "^1.2.8",
+    "browserstack-local": "^1.2.8",
+    "typescript": "^4.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

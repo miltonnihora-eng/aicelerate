@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  playwright-tests:
+    image: mcr.microsoft.com/playwright:v1.45.0-jammy
+    
+    working_dir: /workspace
+    
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    
+    environment:
+      - NODE_ENV=test
+      - BASE_URL=${BASE_URL:-https://tst.luister-cms.api.npox.nl}
+      - LUISTER_CMS_API_TOKEN=${LUISTER_CMS_API_TOKEN}
+      - CI=true
+    
+    command: >
+      sh -c "
+        npm ci &&
+        npm run test:npo
+      "
+    
+    # Exit code will be non-zero if tests fail
+    stdin_open: true
+    tty: true
+
+  playwright-api-tests:
+    image: mcr.microsoft.com/playwright:v1.45.0-jammy
+    
+    working_dir: /workspace
+    
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    
+    environment:
+      - NODE_ENV=test
+      - BASE_URL=${BASE_URL:-https://tst.luister-cms.api.npox.nl}
+      - LUISTER_CMS_API_TOKEN=${LUISTER_CMS_API_TOKEN}
+      - CI=true
+    
+    command: >
+      sh -c "
+        npm ci &&
+        npm run test:npo-api
+      "
+    
+    stdin_open: true
+    tty: true
+
+  playwright-swagger-tests:
+    image: mcr.microsoft.com/playwright:v1.45.0-jammy
+    
+    working_dir: /workspace
+    
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    
+    environment:
+      - NODE_ENV=test
+      - BASE_URL=${BASE_URL:-https://tst.luister-cms.api.npox.nl}
+      - CI=true
+    
+    command: >
+      sh -c "
+        npm ci &&
+        npx playwright install --with-deps &&
+        npm run test:npo-swagger
+      "
+    
+    stdin_open: true
+    tty: true

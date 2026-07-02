@@ -149,10 +149,10 @@ For task-specific or context-specific guidance, use skills or agents instead. Th
 Copilot won't infer Jira context from your codebase. Add this block manually so every agent and skill that touches Jira targets the right project and sprint without prompting:
 
 ```markdown
-## JIRA (<Project> Project)
+## JIRA (NPOLCMS Project)
 
-- Assume "ticket" or "JIRA" refers to the <Project> project.
-- Server: `#atlassian/atlassian-mcp-server`. URL: `https://<org>.atlassian.net/browse/<Project>`
+- Assume "ticket" or "JIRA" refers to the NPOLCMS project.
+- Server: `#atlassian/atlassian-mcp-server`. URL: `https://publiekeomroep.atlassian.net/browse/NPOLCMS`
 - Requirements: Always include clear acceptance criteria and relevant file paths. Add ticket to backlog unless specified different.
 - Allowed types: Taak, Story, Bug, Subtaak, Epic.
 ```
